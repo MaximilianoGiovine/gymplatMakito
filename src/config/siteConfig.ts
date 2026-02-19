@@ -126,9 +126,9 @@ export interface SiteConfig {
 // ============================================================
 
 export const siteConfig: SiteConfig = {
-  firmName: 'González & Asociados',
-  firmSlogan: 'Nos centramos en las necesidades de su familia',
-  firmDescription: 'Bufete de abogados especializado en derecho de familia en Managua, Nicaragua. Representación legal compasiva y efectiva para proteger lo que más importa.',
+  firmName: 'Gymplat',
+  firmSlogan: 'Tu compañero de entrenamiento inteligente',
+  firmDescription: 'Plataforma integral de fitness con IA, rutinas personalizadas y seguimiento de nutrición.',
   founderName: 'Irene González',
   founderTitle: 'Abogada Principal y Fundadora',
   founderBio: 'Con más de 9 años de experiencia en derecho de familia, la Licda. Irene González ha dedicado su carrera a proteger los derechos e intereses de las familias nicaragüenses. Su enfoque combina un profundo conocimiento legal con una genuina empatía hacia cada cliente, asegurando que cada caso reciba la atención personalizada que merece. Fundadora de González & Asociados, lidera un equipo comprometido con brindar soluciones legales integrales que priorizan el bienestar de la familia.',
@@ -156,21 +156,10 @@ export const siteConfig: SiteConfig = {
   navigation: {
     items: [
       { label: 'Inicio', href: '/' },
-      {
-        label: 'Derecho de Familia',
-        href: '/servicios',
-        children: [
-          { label: 'Divorcio', href: '/servicios#divorcio' },
-          { label: 'Custodia de Menores', href: '/servicios#custodia' },
-          { label: 'Pensión Alimenticia', href: '/servicios#pension' },
-          { label: 'Mediación Familiar', href: '/servicios#mediacion' },
-          { label: 'Violencia Doméstica', href: '/servicios#violencia' },
-          { label: 'Separación Legal', href: '/servicios#separacion' },
-        ],
-      },
-      { label: 'Equipo Legal', href: '/equipo' },
-      { label: 'Nuestro Enfoque', href: '/#enfoque' },
-      { label: 'Contacto', href: '/contacto' },
+      { label: 'Entrenamientos', href: '/workout' },
+      { label: 'Nutrición', href: '/recipes' },
+      { label: 'Precios', href: '/pricing' },
+      { label: 'Coach', href: '/coach' },
     ],
   },
 

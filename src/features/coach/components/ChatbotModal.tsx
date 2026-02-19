@@ -110,7 +110,7 @@ function ChatInterface({
                                 <MessageSquare className="w-6 h-6 text-primary" />
                             </div>
                             <p className="text-muted-foreground text-sm">
-                                Ask me anything about your workout or nutrition!
+                                ¡Pregúntame lo que quieras sobre tu entrenamiento o nutrición!
                             </p>
                         </div>
                     )}
@@ -132,7 +132,7 @@ function ChatInterface({
                     {isLoading && (
                         <div className="flex justify-start">
                             <div className="bg-muted p-3 rounded-lg text-sm italic text-gray-400">
-                                Typing...
+                                Escribiendo...
                             </div>
                         </div>
                     )}
@@ -142,7 +142,7 @@ function ChatInterface({
             <div className="p-4 border-t flex gap-2">
                 <input
                     className="flex-1 text-sm border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary bg-background text-foreground"
-                    placeholder="Ask about squats..."
+                    placeholder="Pregunta sobre sentadillas, nutrición..."
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSend()}

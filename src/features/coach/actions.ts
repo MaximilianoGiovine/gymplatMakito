@@ -4,14 +4,13 @@ import OpenAI from "openai";
 import { createClient } from "@/lib/supabase/server";
 
 export async function generateCoachingResponse(userQuery: string) {
-    // 1. MOCK MODE (Fallout if no URL configured)
-    const HF_SPACE_URL = process.env.HF_SPACE_URL || "https://makitodev-makito.hf.space";
+    const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
-    // Simple check if URL is valid/present
-    if (!HF_SPACE_URL && !process.env.OPENAI_API_KEY) {
+    // Default mock mode if no key is configured
+    if (!GROQ_API_KEY) {
         await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
         return "🤖 [MODO MOCK] ¡Aquí Makito Workout! \n\n" +
-            "Parece que no tengo configurada mi conexión neuronal (API Key o URL). \n\n" +
+            "Parece que no tengo configurada mi conexión neuronal (GROQ_API_KEY). \n\n" +
             "Para consejos reales, configura las variables de entorno. ¡Mientras tanto, sigue dándolo todo! 💪";
     }
 
@@ -51,58 +50,22 @@ export async function generateCoachingResponse(userQuery: string) {
   `;
 
     try {
-        // Support for standard OpenAI IF key is present (fallback)
-        if (process.env.OPENAI_API_KEY && !process.env.HF_SPACE_URL) {
-            const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-            const completion = await openai.chat.completions.create({
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: userQuery },
-                ],
-                model: "gpt-3.5-turbo",
-            });
-            return completion.choices[0].message.content;
-        }
-
-        // STRATEGY: Use OpenAI Client with Custom HF Endpoint
-        // We confirmed via testing that the model name is 'Makito:latest' or 'qwen2.5-coder:7b'
-        console.log("Using Custom HF Endpoint:", HF_SPACE_URL);
-
-        const customClient = new OpenAI({
-            baseURL: `${HF_SPACE_URL}/v1`,
-            apiKey: process.env.HF_ACCESS_TOKEN || "start-token",
+        // STRATEGY: Use OpenAI Client with Groq Endpoint for ultra-fast Llama 3 inference
+        const groqClient = new OpenAI({
+            baseURL: "https://api.groq.com/openai/v1",
+            apiKey: GROQ_API_KEY,
         });
 
-        try {
-            const completion = await customClient.chat.completions.create({
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: userQuery }
-                ],
-                model: "Makito:latest", // Confirmed via test script
-                max_tokens: 500,
-            });
+        const completion = await groqClient.chat.completions.create({
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userQuery }
+            ],
+            model: "llama-3.3-70b-versatile",
+            max_tokens: 500,
+        });
 
-            return completion.choices[0].message.content || "Empty response from Custom Model.";
-
-        } catch (apiError) {
-            console.error("Custom AI API Error:", apiError);
-
-            // Fallback to second model name if first fails
-            try {
-                const retryCompletion = await customClient.chat.completions.create({
-                    messages: [
-                        { role: "system", content: systemPrompt },
-                        { role: "user", content: userQuery }
-                    ],
-                    model: "qwen2.5-coder:7b", // Fallback model name
-                    max_tokens: 500,
-                });
-                return retryCompletion.choices[0].message.content || "Empty response from Backup Model.";
-            } catch (retryError) {
-                return `⚠️ AI Error: ${(apiError as Error).message}. Check Space URL & Token.`;
-            }
-        }
+        return completion.choices[0].message.content || "Sin respuesta del modelo.";
 
     } catch (error) {
         console.error("AI Service Error:", error);

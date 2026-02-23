@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { DashboardCalendar } from '@/features/dashboard/components/DashboardCalendar'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Activity, Dumbbell, Utensils, ArrowRight } from 'lucide-react'
+import { PlusCircle } from 'lucide-react'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -13,105 +13,56 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
+  // 1. Check Onboarding Status
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single()
 
-  const userName = profile?.full_name || user.email?.split('@')[0] || 'Athlete'
+  if (!profile?.onboarding_completed) {
+    redirect('/onboarding')
+  }
+
+  // 2. Fetch Active Plan
+  const { data: activePlan } = await supabase
+    .from('user_plans')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('is_active', true)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  const userName = profile?.full_name || user.email?.split('@')[0] || 'Atleta'
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Welcome back, {userName}</h1>
-        <p className="text-muted-foreground mt-2">Here is your daily activity overview.</p>
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">¡A darle, {userName}!</h1>
+          <p className="text-muted-foreground mt-2">Aquí está tu ruta personalizada para alcanzar tus metas.</p>
+        </div>
+
+        {/* Quick action to force new plan if needed */}
+        <Button variant="outline" asChild>
+          <Link href="/onboarding" className="flex items-center gap-2">
+            <PlusCircle className="w-4 h-4" /> Nuevo Plan (Re-evaluación)
+          </Link>
+        </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Weekly Workouts</CardTitle>
-            <Dumbbell className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">3</div>
-            <p className="text-xs text-muted-foreground">+1 from last week</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Nutrition Score</CardTitle>
-            <Utensils className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">85%</div>
-            <p className="text-xs text-muted-foreground">On track</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Streak</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary">5 Days</div>
-            <p className="text-xs text-muted-foreground">Keep it up!</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
-            <Link href="/workout/new">
-              <div className="p-4 border rounded-lg hover:border-primary cursor-pointer transition-colors bg-card hover:shadow-md group">
-                <div className="flex items-center gap-4">
-                  <div className="bg-primary/10 p-2 rounded-full group-hover:bg-primary group-hover:text-white transition-colors">
-                    <Dumbbell className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Log Workout</h3>
-                    <p className="text-sm text-muted-foreground">Track your weights & sets</p>
-                  </div>
-                </div>
-              </div>
-            </Link>
-            <Link href="/coach">
-              <div className="p-4 border rounded-lg hover:border-primary cursor-pointer transition-colors bg-card hover:shadow-md group">
-                <div className="flex items-center gap-4">
-                  <div className="bg-primary/10 p-2 rounded-full group-hover:bg-primary group-hover:text-white transition-colors">
-                    <Activity className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Chat with Makito</h3>
-                    <p className="text-sm text-muted-foreground">Get advice & tips</p>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          </CardContent>
-        </Card>
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <div className="text-sm text-muted-foreground">No recent activity</div>
-          </CardHeader>
-          <CardContent>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Example of Glass Button Usage */}
-      <div className="mt-8">
-        <h3 className="text-lg font-semibold mb-4">Experimental Features</h3>
-        <button className="glass-button px-6 py-2 rounded-lg text-white font-medium">
-          Try Pro Feature (Glass Button)
-        </button>
-      </div>
+      {activePlan ? (
+        <DashboardCalendar plan={activePlan} />
+      ) : (
+        <div className="text-center py-20 border-2 border-dashed rounded-2xl bg-muted/20">
+          <h3 className="text-xl font-bold mb-2">No tienes un plan activo</h3>
+          <p className="text-muted-foreground mb-6">Parece que hubo un error al generar tu plan, o ya expiró.</p>
+          <Button asChild size="lg">
+            <Link href="/onboarding">Iniciar Evaluación Makito</Link>
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

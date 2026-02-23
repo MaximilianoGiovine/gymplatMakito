@@ -9,9 +9,37 @@ export interface Profile {
   email: string
   full_name: string | null
   avatar_url: string | null
+  subscription_tier: 'free' | 'premium'
   role: UserRole
+  onboarding_completed: boolean
+  height: number | null
+  weight: number | null
+  goals: string | null
+  equipment: string | null
+  target_days_per_week: number | null
   created_at: string
   updated_at: string
+}
+
+export interface UserPlan {
+  id: string
+  user_id: string
+  start_date: string
+  end_date: string
+  plan_data: any // JSONB
+  diet_suggestions: any // JSONB
+  is_active: boolean
+  created_at: string
+}
+
+export interface FitTest {
+  id: string
+  user_id: string
+  plan_id: string
+  test_date: string
+  results_data: any // JSONB
+  ai_feedback: string | null
+  created_at: string
 }
 
 export interface Lawyer {
@@ -302,8 +330,18 @@ export interface Database {
     Tables: {
       profiles: {
         Row: Profile
-        Insert: Omit<Profile, 'created_at' | 'updated_at'>
+        Insert: Omit<Profile, 'created_at' | 'updated_at' | 'onboarding_completed' | 'subscription_tier'>
         Update: Partial<Omit<Profile, 'id' | 'created_at'>>
+      }
+      user_plans: {
+        Row: UserPlan
+        Insert: Omit<UserPlan, 'id' | 'created_at'>
+        Update: Partial<Omit<UserPlan, 'id' | 'created_at'>>
+      }
+      fit_tests: {
+        Row: FitTest
+        Insert: Omit<FitTest, 'id' | 'created_at'>
+        Update: Partial<Omit<FitTest, 'id' | 'created_at'>>
       }
       lawyers: {
         Row: Lawyer

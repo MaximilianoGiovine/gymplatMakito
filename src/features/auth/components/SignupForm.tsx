@@ -26,13 +26,13 @@ export function SignupForm() {
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle>Create account</CardTitle>
-        <CardDescription>Get started for free</CardDescription>
+    <Card className="w-full max-w-md mx-auto shadow-lg">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-2xl font-bold tracking-tight text-balance text-center">Create account</CardTitle>
+        <CardDescription className="text-balance text-center">Get started for free</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <SocialAuthButton provider="google" onAuth={() => signInWithGoogle()} />
           <SocialAuthButton provider="apple" onAuth={() => signInWithApple()} />
         </div>
@@ -56,6 +56,7 @@ export function SignupForm() {
                 type="email"
                 placeholder="m@example.com"
                 required
+                className="h-11"
               />
             </div>
             <div className="space-y-2">
@@ -66,21 +67,22 @@ export function SignupForm() {
                 type="password"
                 required
                 minLength={6}
+                className="h-11"
               />
             </div>
             {error && (
-              <p className="text-sm text-destructive">{error}</p>
+              <p className="text-sm text-destructive text-center font-medium">{error}</p>
             )}
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full h-11 text-base" disabled={loading}>
               {loading ? 'Creating account...' : 'Create Account'}
             </Button>
           </div>
         </form>
       </CardContent>
       <CardFooter className="flex flex-col space-y-4">
-        <div className="text-center text-sm">
+        <div className="text-center text-sm text-muted-foreground">
           Already have an account?{' '}
-          <Link href="/login" className="text-primary hover:underline">
+          <Link href="/login" className="text-primary hover:underline font-medium">
             Sign in
           </Link>
         </div>

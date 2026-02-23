@@ -26,13 +26,13 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle>Welcome back</CardTitle>
-        <CardDescription>Sign in to your account</CardDescription>
+    <Card className="w-full max-w-md mx-auto shadow-lg">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-2xl font-bold tracking-tight text-balance text-center">Welcome back</CardTitle>
+        <CardDescription className="text-balance text-center">Sign in to your account</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <SocialAuthButton provider="google" onAuth={() => signInWithGoogle()} />
           <SocialAuthButton provider="apple" onAuth={() => signInWithApple()} />
         </div>
@@ -56,6 +56,7 @@ export function LoginForm() {
                 type="email"
                 placeholder="m@example.com"
                 required
+                className="h-11"
               />
             </div>
             <div className="space-y-2">
@@ -65,12 +66,13 @@ export function LoginForm() {
                 name="password"
                 type="password"
                 required
+                className="h-11"
               />
             </div>
             {error && (
-              <p className="text-sm text-destructive">{error}</p>
+              <p className="text-sm text-destructive text-center font-medium">{error}</p>
             )}
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full h-11 text-base" disabled={loading}>
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </div>
@@ -78,13 +80,13 @@ export function LoginForm() {
       </CardContent>
       <CardFooter className="flex flex-col space-y-4">
         <div className="text-center text-sm">
-          <Link href="/forgot-password" className="text-primary hover:underline">
+          <Link href="/forgot-password" className="text-primary hover:underline font-medium">
             Forgot password?
           </Link>
         </div>
-        <div className="text-center text-sm">
+        <div className="text-center text-sm text-muted-foreground">
           Don't have an account?{' '}
-          <Link href="/signup" className="text-primary hover:underline">
+          <Link href="/signup" className="text-primary hover:underline font-medium">
             Sign up
           </Link>
         </div>

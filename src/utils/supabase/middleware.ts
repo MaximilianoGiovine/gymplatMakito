@@ -41,16 +41,25 @@ export async function updateSession(request: NextRequest) {
         request.nextUrl.pathname.startsWith('/signup') ||
         request.nextUrl.pathname.startsWith('/auth')
 
+    const host = request.headers.get('host')
+    const forwardedHost = request.headers.get('x-forwarded-host')
+    const isLocalEnv = process.env.NODE_ENV === 'development'
+
+    let secureOrigin = request.nextUrl.origin
+    if (!isLocalEnv) {
+        if (forwardedHost) {
+            secureOrigin = `https://${forwardedHost}`
+        } else if (host) {
+            secureOrigin = `https://${host}`
+        }
+    }
+
     if (isProtectedRoute && !user) {
-        const url = request.nextUrl.clone()
-        url.pathname = '/login'
-        return NextResponse.redirect(url)
+        return NextResponse.redirect(`${secureOrigin}/login`)
     }
 
     if (isAuthRoute && user) {
-        const url = request.nextUrl.clone()
-        url.pathname = '/dashboard'
-        return NextResponse.redirect(url)
+        return NextResponse.redirect(`${secureOrigin}/dashboard`)
     }
 
     return supabaseResponse

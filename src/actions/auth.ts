@@ -5,6 +5,20 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 
+async function getSecureOrigin() {
+  const reqHeaders = await headers()
+  const host = reqHeaders.get('host')
+  const forwardedHost = reqHeaders.get('x-forwarded-host')
+  const isLocalEnv = process.env.NODE_ENV === 'development'
+
+  if (isLocalEnv) return 'http://localhost:3000'
+
+  if (forwardedHost) return `https://${forwardedHost}`
+  if (host) return `https://${host}`
+
+  return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+}
+
 export async function login(formData: FormData) {
   const supabase = await createClient()
 
@@ -18,7 +32,8 @@ export async function login(formData: FormData) {
   }
 
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  const origin = await getSecureOrigin()
+  redirect(`${origin}/dashboard`)
 }
 
 export async function signup(formData: FormData) {
@@ -34,15 +49,13 @@ export async function signup(formData: FormData) {
   }
 
   revalidatePath('/', 'layout')
-  redirect('/check-email')
+  const origin = await getSecureOrigin()
+  redirect(`${origin}/check-email`)
 }
 
 export async function signInWithGoogle() {
   const supabase = await createClient()
-  const reqHeaders = await headers()
-  const host = reqHeaders.get('host')
-  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https'
-  const origin = `${protocol}://${host}`
+  const origin = await getSecureOrigin()
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -62,10 +75,7 @@ export async function signInWithGoogle() {
 
 export async function signInWithApple() {
   const supabase = await createClient()
-  const reqHeaders = await headers()
-  const host = reqHeaders.get('host')
-  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https'
-  const origin = `${protocol}://${host}`
+  const origin = await getSecureOrigin()
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'apple',
@@ -87,15 +97,17 @@ export async function signout() {
   const supabase = await createClient()
   await supabase.auth.signOut()
   revalidatePath('/', 'layout')
-  redirect('/login')
+  const origin = await getSecureOrigin()
+  redirect(`${origin}/login`)
 }
 
 export async function resetPassword(formData: FormData) {
   const supabase = await createClient()
   const email = formData.get('email') as string
+  const origin = await getSecureOrigin()
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/update-password`,
+    redirectTo: `${origin}/update-password`,
   })
 
   if (error) {
@@ -116,7 +128,8 @@ export async function updatePassword(formData: FormData) {
   }
 
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  const origin = await getSecureOrigin()
+  redirect(`${origin}/dashboard`)
 }
 
 export async function updateProfile(formData: FormData) {

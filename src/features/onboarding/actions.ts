@@ -3,7 +3,7 @@
 import OpenAI from 'openai'
 import { createClient } from '@/lib/supabase/server'
 
-const GROQ_API_KEY = process.env.GROQ_API_KEY
+// evaluate inside functions to ensure fresh process.env in NextJS Server Actions
 
 const ONBOARDING_SYSTEM_PROMPT = `
 Eres Makito Workout, un entrenador personal de élite. Tu objetivo actual es realizar una entrevista inicial (onboarding) al nuevo usuario para crearle un plan de 21 días.
@@ -22,6 +22,7 @@ Debes recopilar ESTOS 5 DATOS EXACTOS, de forma conversacional y amena. Haz una 
 `
 
 export async function processOnboardingChat(messageHistory: { role: 'user' | 'assistant', content: string }[]) {
+    const GROQ_API_KEY = process.env.GROQ_API_KEY;
     if (!GROQ_API_KEY) throw new Error("API Key de Groq no configurada.")
 
     const groqClient = new OpenAI({
@@ -92,7 +93,7 @@ export async function generateAndSave21DayPlan(messageHistory: { role: 'user' | 
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) throw new Error("Usuario no autenticado.")
+    const GROQ_API_KEY = process.env.GROQ_API_KEY;
     if (!GROQ_API_KEY) throw new Error("API Key de Groq no configurada.")
 
     const groqClient = new OpenAI({
@@ -114,6 +115,10 @@ export async function generateAndSave21DayPlan(messageHistory: { role: 'user' | 
     if (!responseJsonStr) throw new Error("Makito no pudo generar el plan.")
 
     const parsedData = JSON.parse(responseJsonStr)
+
+    if (!user) {
+        throw new Error("Usuario no autenticado al intentar guardar los datos del perfil.");
+    }
 
     // 2. Save extracted profile info
     await supabase.from('profiles').update({

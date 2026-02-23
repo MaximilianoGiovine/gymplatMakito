@@ -6,12 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 export async function generateCoachingResponse(userQuery: string) {
     const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
-    // Default mock mode if no key is configured
     if (!GROQ_API_KEY) {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
-        return "🤖 [MODO MOCK] ¡Aquí Makito Workout! \n\n" +
-            "Parece que no tengo configurada mi conexión neuronal (GROQ_API_KEY). \n\n" +
-            "Para consejos reales, configura las variables de entorno. ¡Mientras tanto, sigue dándolo todo! 💪";
+        throw new Error("GROQ_API_KEY no está configurada en el entorno.");
     }
 
     const supabase = await createClient();

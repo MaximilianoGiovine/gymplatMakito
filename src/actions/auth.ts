@@ -39,7 +39,10 @@ export async function signup(formData: FormData) {
 
 export async function signInWithGoogle() {
   const supabase = await createClient()
-  const origin = (await headers()).get('origin')
+  const reqHeaders = await headers()
+  const host = reqHeaders.get('host')
+  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https'
+  const origin = `${protocol}://${host}`
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -59,7 +62,10 @@ export async function signInWithGoogle() {
 
 export async function signInWithApple() {
   const supabase = await createClient()
-  const origin = (await headers()).get('origin')
+  const reqHeaders = await headers()
+  const host = reqHeaders.get('host')
+  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https'
+  const origin = `${protocol}://${host}`
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'apple',

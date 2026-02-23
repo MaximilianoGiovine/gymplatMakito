@@ -33,13 +33,26 @@ export async function updateSession(request: NextRequest) {
 
   const isAuthRoute = request.nextUrl.pathname.startsWith('/auth')
 
+  const host = request.headers.get('host')
+  const forwardedHost = request.headers.get('x-forwarded-host')
+  const isLocalEnv = process.env.NODE_ENV === 'development'
+
+  let secureOrigin = request.nextUrl.origin
+  if (!isLocalEnv) {
+    if (forwardedHost) {
+      secureOrigin = `https://${forwardedHost}`
+    } else if (host) {
+      secureOrigin = `https://${host}`
+    }
+  }
+
   if (isProtectedRoute && !user) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    return NextResponse.redirect(`${secureOrigin}/login`)
   }
 
   // Optional: Redirect to dashboard if already logged in and hitting auth page
   // if (isAuthRoute && user) {
-  //   return NextResponse.redirect(new URL('/dashboard', request.url))
+  //   return NextResponse.redirect(`${secureOrigin}/dashboard`)
   // }
 
   return supabaseResponse

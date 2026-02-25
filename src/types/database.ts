@@ -32,6 +32,21 @@ export interface UserPlan {
   created_at: string
 }
 
+export interface Recipe {
+  id: string
+  title: string
+  description: string | null
+  meal_type: 'desayuno' | 'almuerzo' | 'merienda' | 'cena'
+  budget_level: 'bajo' | 'medio' | 'alto'
+  goal_tag: 'masa' | 'perdida' | 'recomposicion' | 'resistencia' | 'general'
+  macros: any // JSONB
+  ingredients: string[] // JSONB array 
+  instructions: string[] // JSONB array
+  is_premium: boolean
+  image_url: string | null
+  created_at: string
+}
+
 export interface FitTest {
   id: string
   user_id: string
@@ -342,6 +357,11 @@ export interface Database {
         Row: FitTest
         Insert: Omit<FitTest, 'id' | 'created_at'>
         Update: Partial<Omit<FitTest, 'id' | 'created_at'>>
+      }
+      recipes: {
+        Row: Recipe
+        Insert: Omit<Recipe, 'id' | 'created_at' | 'is_premium'>
+        Update: Partial<Omit<Recipe, 'id' | 'created_at'>>
       }
       lawyers: {
         Row: Lawyer

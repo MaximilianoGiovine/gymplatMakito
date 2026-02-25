@@ -4,13 +4,11 @@ import OpenAI from "openai";
 import { createClient } from "@/lib/supabase/server";
 
 export async function generateCoachingResponse(userQuery: string) {
-    const HF_SPACE_URL = process.env.HF_SPACE_URL || "https://makitodev-makito.hf.space";
-    const HF_ACCESS_TOKEN = process.env.HF_ACCESS_TOKEN;
+    const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
-    if (!HF_SPACE_URL && !process.env.OPENAI_API_KEY) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+    if (!GROQ_API_KEY) {
         return {
-            reply: "🤖 [MODO MOCK] ¡Aquí Makito Workout! \nParece que no tengo configurada mi conexión neuronal (API Key o URL).",
+            reply: "🤖 [ERROR] ¡Makito Workout no tiene configurada la clave de Groq (GROQ_API_KEY) en el entorno!",
             remainingTokens: 0
         };
     }
@@ -75,41 +73,22 @@ export async function generateCoachingResponse(userQuery: string) {
   `;
 
     try {
-        // STRATEGY: Use OpenAI Client with Custom HF Endpoint
-        console.log("Using Custom HF Endpoint:", HF_SPACE_URL);
-
-        const customClient = new OpenAI({
-            baseURL: `${HF_SPACE_URL}/v1`,
-            apiKey: HF_ACCESS_TOKEN || "start-token",
+        // STRATEGY: Use OpenAI Client with Groq Endpoint for ultra-fast Llama 3 inference
+        const groqClient = new OpenAI({
+            baseURL: "https://api.groq.com/openai/v1",
+            apiKey: GROQ_API_KEY,
         });
 
-        let reply = "Sin respuesta del modelo.";
+        const completion = await groqClient.chat.completions.create({
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userQuery }
+            ],
+            model: "llama-3.3-70b-versatile",
+            max_tokens: 500,
+        });
 
-        try {
-            const completion = await customClient.chat.completions.create({
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: userQuery }
-                ],
-                model: "Makito:latest", // Confirmed via test script
-                max_tokens: 500,
-            });
-
-            reply = completion.choices[0].message.content || "Empty response from Custom Model.";
-
-        } catch (apiError) {
-            console.error("Custom AI API Error with Makito:latest:", apiError);
-            // Fallback to second model name if first fails
-            const retryCompletion = await customClient.chat.completions.create({
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: userQuery }
-                ],
-                model: "qwen2.5-coder:7b", // Fallback model name
-                max_tokens: 500,
-            });
-            reply = retryCompletion.choices[0].message.content || "Empty response from Backup Model.";
-        }
+        const reply = completion.choices[0].message.content || "Sin respuesta del modelo.";
 
         // Si la IA respondió con éxito, descontar 1 token
         let tokensLeft = currentTokens || 0;

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { calculateCurrentDayNumber, getDisplayDateForDay } from '@/lib/date-utils'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dumbbell, CheckCircle2, ChevronRight, Utensils, CalendarDays } from 'lucide-react'
@@ -21,14 +22,11 @@ interface DashboardCalendarProps {
 }
 
 export function DashboardCalendar({ plan }: DashboardCalendarProps) {
-    // Calculate current day based on start_date
-    const startDate = new Date(plan.start_date)
-    const today = new Date()
-    const diffTime = Math.abs(today.getTime() - startDate.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    // Calculate current day based on strict local tz subtraction
+    const calculatedDayNumber = calculateCurrentDayNumber(plan.start_date)
 
     // Cap at 21, default to 1 if negative (timezone edge cases)
-    const currentDayNumber = Math.max(1, Math.min(21, diffDays))
+    const currentDayNumber = Math.max(1, Math.min(21, calculatedDayNumber))
 
     const [selectedDay, setSelectedDay] = useState<number>(currentDayNumber)
 
@@ -73,8 +71,11 @@ export function DashboardCalendar({ plan }: DashboardCalendarProps) {
                   `}
                                 >
                                     <span className="text-xs text-muted-foreground">Día</span>
-                                    <span className={`text-lg leading-none ${isToday || isSelected ? 'text-primary' : ''}`}>
+                                    <span className={`text-lg leading-none mb-1 ${isToday || isSelected ? 'text-primary' : ''}`}>
                                         {day.dayNumber}
+                                    </span>
+                                    <span className="text-[10px] text-muted-foreground/70 uppercase">
+                                        {getDisplayDateForDay(plan.start_date, day.dayNumber).split(',')[0]}
                                     </span>
 
                                     {isPast && !day.isRestDay && (

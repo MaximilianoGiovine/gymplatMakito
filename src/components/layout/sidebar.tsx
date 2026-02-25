@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Dumbbell, Utensils, BrainCircuit, LayoutDashboard, Settings, LogOut, ShieldCheck } from 'lucide-react'
+import { Dumbbell, Utensils, BrainCircuit, LayoutDashboard, Settings, LogOut, ShieldCheck, Activity } from 'lucide-react'
 
 // Simple type for UserRole
 type UserRole = 'admin' | 'user'
@@ -19,6 +19,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/workout', label: 'Workouts', icon: Dumbbell },
+  { href: '/progress', label: 'Progreso', icon: Activity },
   { href: '/recipes', label: 'Nutrition', icon: Utensils },
   { href: '/coach', label: 'Makito', icon: BrainCircuit },
   { href: '/admin', label: 'Admin Panel', icon: ShieldCheck, roles: ['admin'] },

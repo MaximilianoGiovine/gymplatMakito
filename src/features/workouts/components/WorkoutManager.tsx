@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { calculateCurrentDayNumber } from '@/lib/date-utils'
 import WorkoutExecution from './WorkoutExecution'
 import { Loader2, CalendarX2 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,6 +11,8 @@ import Link from 'next/link'
 
 export default function WorkoutManager() {
     const [dailyWorkout, setDailyWorkout] = useState<any>(null)
+    const [planId, setPlanId] = useState<string | null>(null)
+    const [fullPlanData, setFullPlanData] = useState<any[] | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [isCompletedToday, setIsCompletedToday] = useState(false)
@@ -39,18 +42,7 @@ export default function WorkoutManager() {
                 }
 
                 // Calculate which day we are on relative to start_date
-                const startDate = new Date(plan.start_date)
-                const today = new Date()
-
-                // Reset times to compare just dates
-                startDate.setHours(0, 0, 0, 0)
-                today.setHours(0, 0, 0, 0)
-
-                const diffTime = Math.abs(today.getTime() - startDate.getTime())
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-                // Day number is 1-indexed. If diff is 0 (same day), it's day 1.
-                const currentDayNumber = diffDays + 1
+                const currentDayNumber = calculateCurrentDayNumber(plan.start_date)
 
                 if (currentDayNumber > 21) {
                     setError('Tu plan de 21 días ha concluido. Es hora del Fit Test.')
@@ -66,6 +58,8 @@ export default function WorkoutManager() {
                 }
 
                 setDailyWorkout(todaysWorkout)
+                setPlanId(plan.id)
+                setFullPlanData(plan.plan_data)
 
             } catch (err: any) {
                 console.error(err)
@@ -78,9 +72,23 @@ export default function WorkoutManager() {
         fetchTodayWorkout()
     }, [])
 
-    const handleWorkoutComplete = () => {
-        // TODO: In a real app, log this completion to Supabase `logs` or `fit_tests`
+    const handleWorkoutComplete = async () => {
         setIsCompletedToday(true)
+
+        if (!planId || !fullPlanData || !dailyWorkout) return;
+
+        // Create a new array reference with the updated day marked as completed
+        const updatedPlanData = fullPlanData.map((day: any) =>
+            day.dayNumber === dailyWorkout.dayNumber
+                ? { ...day, isCompleted: true }
+                : day
+        );
+
+        const supabase = createClient()
+        await supabase
+            .from('user_plans')
+            .update({ plan_data: updatedPlanData })
+            .eq('id', planId)
     }
 
     if (isLoading) {

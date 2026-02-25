@@ -17,6 +17,7 @@ export default function ChatbotModal({ embedded = false }: { embedded?: boolean 
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [tokensLeft, setTokensLeft] = useState<number | null>(null);
 
     const handleSend = async () => {
         if (!inputValue.trim()) return;
@@ -31,9 +32,12 @@ export default function ChatbotModal({ embedded = false }: { embedded?: boolean 
             const botMsg: Message = {
                 id: (Date.now() + 1).toString(),
                 role: "assistant",
-                content: response || "No response."
+                content: response.reply || "No response."
             };
             setMessages((prev) => [...prev, botMsg]);
+            if (response.remainingTokens !== undefined) {
+                setTokensLeft(response.remainingTokens);
+            }
         } catch (error) {
             console.error("Chat Error:", error);
             const errorMsg: Message = {
@@ -57,6 +61,7 @@ export default function ChatbotModal({ embedded = false }: { embedded?: boolean 
             isLoading={isLoading}
             handleSend={handleSend}
             embedded={embedded}
+            tokensLeft={tokensLeft}
         />
     );
 }
@@ -69,7 +74,8 @@ function ChatInterface({
     setInputValue,
     isLoading,
     handleSend,
-    embedded
+    embedded,
+    tokensLeft
 }: {
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
@@ -79,6 +85,7 @@ function ChatInterface({
     isLoading: boolean;
     handleSend: () => void;
     embedded: boolean;
+    tokensLeft: number | null;
 }) {
     if (!embedded && !isOpen) {
         return (
@@ -94,7 +101,14 @@ function ChatInterface({
     return (
         <Card className={embedded ? "w-full h-[600px] flex flex-col shadow-sm border-border" : "fixed bottom-6 right-6 w-80 md:w-96 h-[500px] flex flex-col shadow-2xl z-50 border-primary/20"}>
             <div className="p-4 bg-primary text-primary-foreground flex justify-between items-center rounded-t-lg">
-                <h3 className="font-bold">Makito Workout</h3>
+                <div className="flex items-center gap-2">
+                    <h3 className="font-bold">Makito Workout</h3>
+                    {tokensLeft !== null && (
+                        <span className="bg-primary-foreground/20 text-[10px] px-2 py-0.5 rounded-full font-mono">
+                            ⚡ {tokensLeft} Tokens
+                        </span>
+                    )}
+                </div>
                 {!embedded && (
                     <Button variant="ghost" onClick={() => setIsOpen(false)} className="text-primary-foreground hover:bg-primary/80 h-8 w-8 p-0">
                         <X className="w-4 h-4" />

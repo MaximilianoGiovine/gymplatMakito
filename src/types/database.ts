@@ -17,6 +17,8 @@ export interface Profile {
   goals: string | null
   equipment: string | null
   target_days_per_week: number | null
+  chat_tokens: number
+  last_token_refill: string
   created_at: string
   updated_at: string
 }

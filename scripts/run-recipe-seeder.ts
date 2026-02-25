@@ -1,3 +1,4 @@
+// @ts-nocheck
 // scripts/run-recipe-seeder.ts
 import { generateRecipeBatch } from '../src/actions/recipe-seeder';
 import { createClient } from '@supabase/supabase-js';

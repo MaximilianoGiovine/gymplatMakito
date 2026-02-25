@@ -96,6 +96,30 @@ export async function generateAndSave21DayPlan(messageHistory: { role: 'user' | 
     const GROQ_API_KEY = process.env.GROQ_API_KEY;
     if (!GROQ_API_KEY) throw new Error("API Key de Groq no configurada.")
 
+    if (!user) {
+        throw new Error("Usuario no autenticado al intentar guardar los datos del perfil.");
+    }
+
+    // --- RATE LIMITING: Check for active 21-day plans ---
+    const { data: latestPlan } = await supabase
+        .from('user_plans')
+        .select('end_date')
+        .eq('user_id', user.id)
+        .order('start_date', { ascending: false })
+        .limit(1)
+        .single()
+
+    if (latestPlan) {
+        const endDate = new Date(latestPlan.end_date)
+        const today = new Date()
+
+        // Ensure the end date has passed before allowing a new plan
+        if (today < endDate) {
+            throw new Error(`Ya tienes un plan activo que finaliza el ${latestPlan.end_date}. No puedes generar uno nuevo hasta completar este ciclo de 21 días.`)
+        }
+    }
+    // ----------------------------------------------------
+
     const groqClient = new OpenAI({
         baseURL: 'https://api.groq.com/openai/v1',
         apiKey: GROQ_API_KEY,
@@ -115,10 +139,6 @@ export async function generateAndSave21DayPlan(messageHistory: { role: 'user' | 
     if (!responseJsonStr) throw new Error("Makito no pudo generar el plan.")
 
     const parsedData = JSON.parse(responseJsonStr)
-
-    if (!user) {
-        throw new Error("Usuario no autenticado al intentar guardar los datos del perfil.");
-    }
 
     // 2. Save extracted profile info
     await supabase.from('profiles').update({

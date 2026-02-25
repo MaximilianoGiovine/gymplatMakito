@@ -37,6 +37,12 @@ export function OnboardingChat() {
         try {
             const response = await processOnboardingChat(newMsgs)
 
+            if (response.status === 'error') {
+                setMessages(prev => [...prev, { role: 'assistant', content: response.message }])
+                setIsLoading(false)
+                return
+            }
+
             setMessages(prev => [...prev, { role: 'assistant', content: response.message }])
 
             if (response.status === 'completed') {
@@ -50,9 +56,9 @@ export function OnboardingChat() {
                 window.location.href = '/dashboard'
             }
 
-        } catch (error) {
+        } catch (error: any) {
             console.error(error)
-            setMessages(prev => [...prev, { role: 'assistant', content: 'Uf, perdóname, tuve un calambre de conexión. ¿Puedes repetir eso?' }])
+            setMessages(prev => [...prev, { role: 'assistant', content: `Uf, perdóname, tuve un error interno catastrófico: ${error.message || 'Error Desconocido'}. ¿Puedes repetir eso?` }])
         } finally {
             setIsLoading(false)
         }

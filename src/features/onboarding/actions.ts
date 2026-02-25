@@ -23,7 +23,7 @@ Debes recopilar ESTOS 5 DATOS EXACTOS, de forma conversacional y amena. Haz una 
 
 export async function processOnboardingChat(messageHistory: { role: 'user' | 'assistant', content: string }[]) {
     const GROQ_API_KEY = process.env.GROQ_API_KEY;
-    if (!GROQ_API_KEY) throw new Error("API Key de Groq no configurada.")
+    if (!GROQ_API_KEY) return { status: 'error', message: "ERROR TÉCNICO: La variable GROQ_API_KEY no existe en el entorno del servidor (Hostinger)." }
 
     const groqClient = new OpenAI({
         baseURL: 'https://api.groq.com/openai/v1',
@@ -48,9 +48,9 @@ export async function processOnboardingChat(messageHistory: { role: 'user' | 'as
         }
 
         return { status: 'in_progress', message: responseText }
-    } catch (error) {
+    } catch (error: any) {
         console.error("Onboarding AI Error:", error)
-        throw new Error("No se pudo conectar con Makito.")
+        return { status: 'error', message: `ERROR TÉCNICO: ${error.message}. Por favor revisa la configuración o red del servidor.` }
     }
 }
 

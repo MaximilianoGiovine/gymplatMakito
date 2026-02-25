@@ -46,9 +46,8 @@ export function OnboardingChat() {
 
                 await generateAndSave21DayPlan(newMsgs)
 
-                // Redirect to dashboard where plan will be visible
-                router.push('/dashboard')
-                router.refresh()
+                // Redirect to dashboard where plan will be visible via Hard Reload
+                window.location.href = '/dashboard'
             }
 
         } catch (error) {

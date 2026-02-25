@@ -13,9 +13,12 @@ export function SignupForm() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  async function handleSubmit(formData: FormData) {
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
     setLoading(true)
     setError(null)
+
+    const formData = new FormData(event.currentTarget)
 
     const result = await signup(formData)
 
@@ -46,7 +49,7 @@ export function SignupForm() {
             </span>
           </div>
         </div>
-        <form action={handleSubmit}>
+        <form onSubmit={onSubmit}>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>

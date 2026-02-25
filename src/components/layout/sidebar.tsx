@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Dumbbell, Utensils, BrainCircuit, LayoutDashboard, Settings, LogOut, ShieldCheck, Activity } from 'lucide-react'
+import { Dumbbell, Utensils, BrainCircuit, LayoutDashboard, Settings, LogOut, ShieldCheck, Activity, User } from 'lucide-react'
 
 // Simple type for UserRole
 type UserRole = 'admin' | 'user'
@@ -18,6 +18,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/profile', label: 'Mi Perfil', icon: User },
   { href: '/workout', label: 'Workouts', icon: Dumbbell },
   { href: '/progress', label: 'Progreso', icon: Activity },
   { href: '/recipes', label: 'Nutrition', icon: Utensils },
@@ -54,8 +55,7 @@ export function Sidebar() {
   const handleLogout = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.refresh()
-    router.push('/login')
+    window.location.href = '/login'
   }
 
   const filteredNavItems = navItems.filter(item => {

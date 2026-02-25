@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { signup, signInWithGoogle, signInWithApple } from '@/actions/auth'
+import { createClient } from '@/lib/supabase/client'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -19,13 +19,32 @@ export function SignupForm() {
     setError(null)
 
     const formData = new FormData(event.currentTarget)
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
 
-    const result = await signup(formData)
+    const supabase = createClient()
+    const { error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+    })
 
-    if (result?.error) {
-      setError(result.error)
+    if (authError) {
+      setError(authError.message)
       setLoading(false)
+    } else {
+      // Hard redirect to verification page or dashboard
+      window.location.href = '/check-email'
     }
+  }
+
+  const handleSocialLogin = async (provider: 'google' | 'apple') => {
+    const supabase = createClient()
+    await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    })
   }
 
   return (
@@ -36,8 +55,8 @@ export function SignupForm() {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <SocialAuthButton provider="google" onAuth={() => signInWithGoogle()} />
-          <SocialAuthButton provider="apple" onAuth={() => signInWithApple()} />
+          <SocialAuthButton provider="google" onAuth={() => handleSocialLogin('google')} />
+          <SocialAuthButton provider="apple" onAuth={() => handleSocialLogin('apple')} />
         </div>
         <div className="relative">
           <div className="absolute inset-0 flex items-center">

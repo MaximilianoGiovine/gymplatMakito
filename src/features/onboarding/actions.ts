@@ -22,7 +22,8 @@ Debes recopilar ESTOS 5 DATOS EXACTOS, de forma conversacional y amena. Haz una 
 `
 
 export async function processOnboardingChat(messageHistory: { role: 'user' | 'assistant', content: string }[]) {
-    const GROQ_API_KEY = process.env.GROQ_API_KEY;
+    // Force runtime evaluation of environment variables in Next.js Server Actions
+    const GROQ_API_KEY = process.env.GROQ_API_KEY || process.env['GROQ_API_KEY'];
     if (!GROQ_API_KEY) return { status: 'error', message: "ERROR TÉCNICO: La variable GROQ_API_KEY no existe en el entorno del servidor (Hostinger)." }
 
     const groqClient = new OpenAI({
@@ -93,7 +94,8 @@ export async function generateAndSave21DayPlan(messageHistory: { role: 'user' | 
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    const GROQ_API_KEY = process.env.GROQ_API_KEY;
+    // Force runtime evaluation
+    const GROQ_API_KEY = process.env.GROQ_API_KEY || process.env['GROQ_API_KEY'];
     if (!GROQ_API_KEY) throw new Error("API Key de Groq no configurada.")
 
     if (!user) {

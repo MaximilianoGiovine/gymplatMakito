@@ -4,7 +4,8 @@ import OpenAI from "openai";
 import { createClient } from "@/lib/supabase/server";
 
 export async function generateCoachingResponse(userQuery: string) {
-    const GROQ_API_KEY = process.env.GROQ_API_KEY;
+    // Evitar que Next.js hardcodee "undefined" en tiempo de build
+    const GROQ_API_KEY = process.env.GROQ_API_KEY || process.env['GROQ_API_KEY'];
 
     if (!GROQ_API_KEY) {
         return {
